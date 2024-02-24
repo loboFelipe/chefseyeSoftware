@@ -1,10 +1,13 @@
-<script>
+<script lang="ts">
+	import { enhance } from "$app/forms";
+    import type { ActionData } from "./$types";
 
+	export let form: ActionData;
 </script>
 
 <header class="card-header text-lg uppercase font-bold text-center">Register</header>
 <section class="p-4">
-    <form action="" class="flex flex-col gap-2">
+    <form class="flex flex-col gap-2" method="POST" action="?/register" use:enhance>
         <input class="input" title="Email" type="email" placeholder="Email" name="email" id="email"/>
         <input class="input" title="Password" type="password" placeholder="Password" name="password" id="password"/>
         <input class="input" title="Confirm password" type="password" placeholder="Confirm password" name="confirm_password" id="confirm_password"/>

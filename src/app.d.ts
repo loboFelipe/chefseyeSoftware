@@ -1,9 +1,22 @@
+/* eslint-disable no-var */
 // See https://kit.svelte.dev/docs/types#app
+
+import type { PrismaClient } from '@prisma/client';
+
 // for information about these interfaces
-// and what to do when importing types
-declare namespace App {
-	// interface Locals {}
-	// interface PageData {}
-	// interface Error {}
-	// interface Platform {}
+declare global {
+	namespace App {
+		// interface Error {}
+		// interface Platform {}
+		interface Locals {
+			user: {
+				name: string;
+				email: string;
+				role: string;
+			};
+		}
+	}
+	var prisma: PrismaClient;
 }
+
+export {};
