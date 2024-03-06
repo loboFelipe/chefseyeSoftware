@@ -3,7 +3,7 @@ import type { Actions, PageServerLoad } from '../login/$types';
 
 
 export const load: PageServerLoad = async () => {
-	throw redirect(302, '/');
+	throw redirect(302, '/login');
 };
 
 export const actions: Actions = {

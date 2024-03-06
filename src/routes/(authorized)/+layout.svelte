@@ -1,14 +1,18 @@
 <script lang="ts">
-	import { AppBar, AppRail, AppRailTile, AppShell, Avatar, popup, type PopupSettings } from "@skeletonlabs/skeleton";
-
+	import { applyAction, enhance } from "$app/forms";
+	import { invalidateAll } from "$app/navigation";
+	import { AppBar, AppRail, AppRailAnchor, AppShell, Avatar, popup, type PopupSettings } from "@skeletonlabs/skeleton";
+    import type { PageData } from "../$types";
+    import { page } from "$app/stores";
+    
+    export let data: PageData;
+    $: ({ user } = data);
 
     const popupClick: PopupSettings = {
         event: 'click',
         target: 'popupClick',
         placement: 'top'
     };
-
-    let currentTile: number = 0;
 </script>
 
 <AppShell slotSidebarLeft="border border-b-0 border-t-0 border-l-0 border-tertiary-900 fixed top-[4.5rem] z-10 h-[100vh]" slotHeader="shadow-2xl fixed left-0 right-0 z-10">
@@ -23,25 +27,32 @@
                 <div class="card p-4 w-72 shadow-xl" data-popup="popupClick">
 					<div class="space-y-4">
 						<div class="flex items-center gap-3">
-                            <Avatar src="https://images.unsplash.com/photo-1617296538902-887900d9b592?ixid=M3w0Njc5ODF8MHwxfGFsbHx8fHx8fHx8fDE2ODc5NzExMDB8&ixlib=rb-4.0.3&w=128&h=128&auto=format&fit=crop" width="w-10" rounded="rounded-full" />
+                            <Avatar initials={`${user.name.split(' ')[0].split('')[0]}${user.name.split(' ')[1].split('')[0]}`} width="w-10" rounded="rounded-full" />
                             <div>
-                                <p class="font-bold">Skeleton</p>
-                                <p class="opacity-50">@SkeletonUI</p>
+                                <p class="font-bold">{user.name}</p>
+                                <p class="opacity-50">{user.email}</p>
                             </div>
                         </div>
-						<div class="flex gap-4">
-							<small><strong>100</strong> <span class="opacity-50">Following</span></small>
-							<small><strong>1000</strong> <span class="opacity-50">Followers</span></small>
-						</div>
 						<div class="space-y-2">
-                            <a class="btn variant-soft-surface w-full" href="/account" target="_blank" rel="noreferrer">Account</a>
-                            <button class="btn variant-soft-primary w-full">Log out</button>
+                            <a class="btn variant-soft-surface w-full" href="/account" rel="noreferrer">Account</a>
+                            <form
+                                action="/logout"
+                                method="post"
+                                use:enhance={() => {
+                                    return async ({ result }) => {
+                                        invalidateAll();
+                                        await applyAction(result);
+                                    };
+                                }}
+                            >
+                                <button type="submit" class="btn variant-soft-primary w-full">Log out</button>
+                            </form>
                         </div>
 					</div>
 					<div class="arrow bg-surface-100-800-token" />
 				</div>
                 <button use:popup={popupClick}>
-                    <Avatar src="https://images.unsplash.com/photo-1617296538902-887900d9b592?ixid=M3w0Njc5ODF8MHwxfGFsbHx8fHx8fHx8fDE2ODc5NzExMDB8&ixlib=rb-4.0.3&w=128&h=128&auto=format&fit=crop" width="w-10" rounded="rounded-full" />
+                    <Avatar initials={`${user.name.split(' ')[0].split('')[0]}${user.name.split(' ')[1].split('')[0]}`} width="w-10" rounded="rounded-full" />
                 </button>
             </svelte:fragment>
         </AppBar>
@@ -50,31 +61,30 @@
 		<!-- Hidden below Tailwind's large breakpoint -->
 		<div id="sidebar-left" class="hidden md:block">
             <AppRail background="bg-transparent">
-                <AppRailTile bind:group={currentTile} name="tile-1" value={0} title="tile-1">
+                <AppRailAnchor href="/dashboard" title="Dashboard" selected={$page.url.pathname.includes('dashboard')}>
                     <svelte:fragment slot="lead">(icon)</svelte:fragment>
                     <span>Dashboard</span>
-                </AppRailTile>
-                <!-- --- -->
-                <AppRailTile bind:group={currentTile} name="tile-1" value={1} title="tile-1">
+                </AppRailAnchor>
+                <AppRailAnchor href="/restaurants" title="Restaurants" selected={$page.url.pathname.includes('restaurants')}>
                     <svelte:fragment slot="lead">(icon)</svelte:fragment>
                     <span>Restaurants</span>
-                </AppRailTile>
-                <AppRailTile bind:group={currentTile} name="tile-2" value={2} title="tile-2">
+                </AppRailAnchor>
+                <AppRailAnchor href="/kitchen" title="Kitchen" selected={$page.url.pathname.includes('kitchen')}>
                     <svelte:fragment slot="lead">(icon)</svelte:fragment>
                     <span>Kitchen</span>
-                </AppRailTile>
-                <AppRailTile bind:group={currentTile} name="tile-3" value={3} title="tile-3">
+                </AppRailAnchor>
+                <AppRailAnchor href="/menu" title="Menu" selected={$page.url.pathname.includes('menu')}>
                     <svelte:fragment slot="lead">(icon)</svelte:fragment>
                     <span>Menu</span>
-                </AppRailTile>
-                <AppRailTile bind:group={currentTile} name="tile-3" value={4} title="tile-3">
+                </AppRailAnchor>
+                <AppRailAnchor href="/storage" title="Storage" selected={$page.url.pathname.includes('storage')}>
                     <svelte:fragment slot="lead">(icon)</svelte:fragment>
                     <span>Storage</span>
-                </AppRailTile>
-                <AppRailTile bind:group={currentTile} name="tile-3" value={5} title="tile-3">
+                </AppRailAnchor>
+                <AppRailAnchor href="/qr" title="QR Code" selected={$page.url.pathname.includes('qr')}>
                     <svelte:fragment slot="lead">(icon)</svelte:fragment>
                     <span>QR Code</span>
-                </AppRailTile>
+                </AppRailAnchor>
             </AppRail>
         </div>
 	</svelte:fragment>

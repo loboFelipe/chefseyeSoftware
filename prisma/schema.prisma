@@ -27,10 +27,107 @@ model User {
 
   role          Roles @relation(fields: [roleId], references: [id])
   roleId        String
+
+  restaurants   Restaurants[]
 }
 
 model Roles {
   id            String    @id @default(uuid())
-  name          String @unique
+  name          String    @unique
   User          User[]
+}
+
+model Restaurants {
+  id            String    @id @default(uuid())
+  name          String
+  address       String
+  phone         String
+  email         String
+  image         String?
+
+  menus         Menus[]
+  tables        Tables[]
+  recipes       Recipes[]
+  storages      Storages[]
+
+  user          User @relation(fields: [userId], references: [id])
+  userId        String
+}
+
+model Menus {
+  id            String    @id @default(uuid())
+  name          String
+  type          String?
+  description   String?
+
+  restaurant    Restaurants @relation(fields: [restaurantId], references: [id])
+  restaurantId  String
+}
+
+model Tables {
+  id            Int    @id @default(autoincrement())
+  locationX     Float?
+  locationY     Float?
+  occupied      Boolean @default(false)
+  number        Int
+
+  orders        Orders[]
+
+  restaurant    Restaurants @relation(fields: [restaurantId], references: [id])
+  restaurantId  String
+}
+
+model Recipes {
+  id            Int    @id @default(autoincrement())
+  name          String
+  description   String?
+  price         Float
+  image         String?
+
+  ingredients   Ingredients[]
+
+  restaurant    Restaurants @relation(fields: [restaurantId], references: [id])
+  restaurantId  String
+
+  order         Orders @relation(fields: [orderId], references: [id])
+  orderId       String
+}
+
+model Ingredients {
+  id          Int    @id @default(autoincrement())
+  name        String
+  unit        String
+  unitList    String?
+  quantity    Float
+  image       String?
+
+  recipe      Recipes @relation(fields: [recipeId], references: [id])
+  recipeId    Int
+
+  storages        Storages @relation(fields: [storagesId], references: [id])
+  storagesId      Int
+}
+
+model Orders {
+  id            String  @id @default(uuid())
+  status        String
+  orderDateTime DateTime
+
+  recipes       Recipes[]
+
+  table         Tables @relation(fields: [tableId], references: [id])
+  tableId       Int
+}
+
+model Storages {
+  id                Int @id @default(autoincrement())
+
+  ingredients       Ingredients[]
+  quatityInStorage  Int
+  maxCapacity       Int
+  unit              String
+  unitList          String?
+
+  restaurant        Restaurants @relation(fields: [restaurantId], references: [id])
+  restaurantId      String
 }
