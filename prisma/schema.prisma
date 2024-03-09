@@ -48,7 +48,7 @@ model Restaurants {
   menus         Menus[]
   tables        Tables[]
   recipes       Recipes[]
-  storages      Storages[]
+  // storages      Storages[]
 
   user          User @relation(fields: [userId], references: [id])
   userId        String
@@ -60,8 +60,20 @@ model Menus {
   type          String?
   description   String?
 
+  sections      MenuSections[]
+
   restaurant    Restaurants @relation(fields: [restaurantId], references: [id])
   restaurantId  String
+}
+
+model MenuSections {
+  id            String    @id @default(uuid())
+  name          String
+
+  recipes       Recipes[]
+
+  menu          Menus @relation(fields: [menuId], references: [id])
+  menuId        String
 }
 
 model Tables {
@@ -84,28 +96,45 @@ model Recipes {
   price         Float
   image         String?
 
-  ingredients   Ingredients[]
+  ingredients   RecipeIngredients[]
 
   restaurant    Restaurants @relation(fields: [restaurantId], references: [id])
   restaurantId  String
 
-  order         Orders @relation(fields: [orderId], references: [id])
-  orderId       String
+  menuSection   MenuSections @relation(fields: [menuSectionId], references: [id])
+  menuSectionId String
+
+  orders       RecipesOnOrders[]
+  // order         Orders? @relation(fields: [orderId], references: [id])
+  // orderId       String?
 }
 
-model Ingredients {
+model RecipeIngredients {
   id          Int    @id @default(autoincrement())
-  name        String
+  // ingrident   Ingredients?
   unit        String
-  unitList    String?
   quantity    Float
-  image       String?
+
+  ingredient      Ingredients @relation(fields: [ingredientId], references: [id])
+  ingredientId    Int
 
   recipe      Recipes @relation(fields: [recipeId], references: [id])
   recipeId    Int
+}
 
-  storages        Storages @relation(fields: [storagesId], references: [id])
-  storagesId      Int
+model Ingredients {
+  id                  Int    @id @default(autoincrement())
+  name                String
+  unitList            String?
+  image               String?
+
+  // storages            Storages @relation(fields: [storagesId], references: [id])
+  // storagesId          Int
+
+  recipes             RecipeIngredients[]
+
+  // recipeIngredient    RecipeIngredients @relation(fields: [recipeIngredientId], references: [id])
+  // recipeIngredientId  Int  @unique // relation scalar field (used in the `@r
 }
 
 model Orders {
@@ -113,21 +142,36 @@ model Orders {
   status        String
   orderDateTime DateTime
 
-  recipes       Recipes[]
+  // recipes       Recipes[]
+  recipes       RecipesOnOrders[]
 
   table         Tables @relation(fields: [tableId], references: [id])
   tableId       Int
 }
 
-model Storages {
-  id                Int @id @default(autoincrement())
+model RecipesOnOrders {
+  order       Orders     @relation(fields: [orderId], references: [id])
+  orderId     String // relation scalar field (used in the `@relation` attribute above)
+  recipe      Recipes @relation(fields: [recipeId], references: [id])
+  recipeId    Int // relation scalar field (used in the `@relation` attribute above)
 
-  ingredients       Ingredients[]
-  quatityInStorage  Int
-  maxCapacity       Int
-  unit              String
-  unitList          String?
-
-  restaurant        Restaurants @relation(fields: [restaurantId], references: [id])
-  restaurantId      String
+  quantity    Int
+  
+  @@id([orderId, recipeId])
 }
+
+
+// model Storages {
+//   id                Int @id @default(autoincrement())
+
+//   name              String
+//   quatityInStorage  Int
+//   maxCapacity       Int
+//   unit              String
+//   unitList          String?
+  
+//   ingredients       Ingredients[]
+
+//   restaurant        Restaurants @relation(fields: [restaurantId], references: [id])
+//   restaurantId      String
+// }
