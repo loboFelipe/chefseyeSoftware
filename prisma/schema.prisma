@@ -37,6 +37,9 @@ model Roles {
   User          User[]
 }
 
+
+
+
 model Restaurants {
   id            String    @id @default(uuid())
   name          String
@@ -46,9 +49,9 @@ model Restaurants {
   image         String?
 
   menus         Menus[]
+  menuSections  MenuSectionsOnRestaurant[]
   tables        Tables[]
-  recipes       Recipes[]
-  // storages      Storages[]
+  recipes       RecipeOnRestaurants[]
 
   user          User @relation(fields: [userId], references: [id])
   userId        String
@@ -60,20 +63,42 @@ model Menus {
   type          String?
   description   String?
 
-  sections      MenuSections[]
+  sections      MenuSectionsOnMenus[]
 
   restaurant    Restaurants @relation(fields: [restaurantId], references: [id])
   restaurantId  String
 }
 
+model MenuSectionsOnRestaurant {
+  restaurant                  Restaurants  @relation(fields: [restaurantId], references: [id])
+  restaurantId                String // relation scalar field (used in the `@relation` attribute above)
+  menuSection                 MenuSections @relation(fields: [menuSectionId], references: [id])
+  menuSectionId               String // relation scalar field (used in the `@relation` attribute above)
+  menuSectionsOnRestaurantId  String @default(uuid())
+
+  @@id([restaurantId, menuSectionId, menuSectionsOnRestaurantId])
+}
+
 model MenuSections {
   id            String    @id @default(uuid())
   name          String
+  order         Int?  @default(0)
 
-  recipes       Recipes[]
+  restaurants   MenuSectionsOnRestaurant[]
 
-  menu          Menus @relation(fields: [menuId], references: [id])
-  menuId        String
+  recipes       RecipeOnMenuSections[]
+
+  menus         MenuSectionsOnMenus[]
+}
+
+model MenuSectionsOnMenus {
+  menu                  Menus  @relation(fields: [menuId], references: [id])
+  menuId                String // relation scalar field (used in the `@relation` attribute above)
+  menuSection           MenuSections @relation(fields: [menuSectionId], references: [id])
+  menuSectionId         String // relation scalar field (used in the `@relation` attribute above)
+  menuSectionsOnMenusId String @default(uuid())
+
+  @@id([menuId, menuSectionId, menuSectionsOnMenusId])
 }
 
 model Tables {
@@ -89,6 +114,28 @@ model Tables {
   restaurantId  String
 }
 
+model Ingredients {
+  id              Int    @id @default(autoincrement())
+  name            String
+  unitList        String?
+  image           String?
+
+  recipes         RecipeIngredients[]
+}
+
+model RecipeIngredients {
+  id              Int    @id @default(autoincrement())
+
+  unit            String
+  quantity        Float
+
+  ingredient      Ingredients @relation(fields: [ingredientId], references: [id])
+  ingredientId    Int
+
+  recipe          Recipes @relation(fields: [recipeId], references: [id])
+  recipeId        Int
+}
+
 model Recipes {
   id            Int    @id @default(autoincrement())
   name          String
@@ -98,51 +145,38 @@ model Recipes {
 
   ingredients   RecipeIngredients[]
 
-  restaurant    Restaurants @relation(fields: [restaurantId], references: [id])
-  restaurantId  String
+  restaurants   RecipeOnRestaurants[]
 
-  menuSection   MenuSections @relation(fields: [menuSectionId], references: [id])
-  menuSectionId String
+  menuSections  RecipeOnMenuSections[]
 
-  orders       RecipesOnOrders[]
-  // order         Orders? @relation(fields: [orderId], references: [id])
-  // orderId       String?
+  orders        RecipesOnOrders[]
 }
 
-model RecipeIngredients {
-  id          Int    @id @default(autoincrement())
-  // ingrident   Ingredients?
-  unit        String
-  quantity    Float
+model RecipeOnRestaurants {
+  recipe                  Recipes  @relation(fields: [recipeId], references: [id])
+  recipeId                Int // relation scalar field (used in the `@relation` attribute above)
+  restaurant              Restaurants @relation(fields: [restaurantId], references: [id])
+  restaurantId            String // relation scalar field (used in the `@relation` attribute above)
+  recipeOnRestaurantId    String @default(uuid())
 
-  ingredient      Ingredients @relation(fields: [ingredientId], references: [id])
-  ingredientId    Int
-
-  recipe      Recipes @relation(fields: [recipeId], references: [id])
-  recipeId    Int
+  @@id([recipeId, restaurantId, recipeOnRestaurantId])
 }
 
-model Ingredients {
-  id                  Int    @id @default(autoincrement())
-  name                String
-  unitList            String?
-  image               String?
+model RecipeOnMenuSections {
+  recipe                  Recipes  @relation(fields: [recipeId], references: [id])
+  recipeId                Int // relation scalar field (used in the `@relation` attribute above)
+  menuSection             MenuSections @relation(fields: [menuSectionId], references: [id])
+  menuSectionId           String // relation scalar field (used in the `@relation` attribute above)
+  recipeOnMenuSectionsId  String @default(uuid())
 
-  // storages            Storages @relation(fields: [storagesId], references: [id])
-  // storagesId          Int
-
-  recipes             RecipeIngredients[]
-
-  // recipeIngredient    RecipeIngredients @relation(fields: [recipeIngredientId], references: [id])
-  // recipeIngredientId  Int  @unique // relation scalar field (used in the `@r
+  @@id([recipeId, menuSectionId, recipeOnMenuSectionsId])
 }
 
 model Orders {
   id            String  @id @default(uuid())
   status        String
-  orderDateTime DateTime
+  orderDateTime DateTime @default(now())
 
-  // recipes       Recipes[]
   recipes       RecipesOnOrders[]
 
   table         Tables @relation(fields: [tableId], references: [id])
@@ -150,28 +184,14 @@ model Orders {
 }
 
 model RecipesOnOrders {
-  order       Orders     @relation(fields: [orderId], references: [id])
-  orderId     String // relation scalar field (used in the `@relation` attribute above)
-  recipe      Recipes @relation(fields: [recipeId], references: [id])
-  recipeId    Int // relation scalar field (used in the `@relation` attribute above)
+  order             Orders  @relation(fields: [orderId], references: [id])
+  orderId           String // relation scalar field (used in the `@relation` attribute above)
+  recipe            Recipes @relation(fields: [recipeId], references: [id])
+  recipeId          Int // relation scalar field (used in the `@relation` attribute above)
 
-  quantity    Int
-  
-  @@id([orderId, recipeId])
+  description       String?
+
+  recipesOnOrdersId String @default(uuid())
+
+  @@id([orderId, recipeId, recipesOnOrdersId])
 }
-
-
-// model Storages {
-//   id                Int @id @default(autoincrement())
-
-//   name              String
-//   quatityInStorage  Int
-//   maxCapacity       Int
-//   unit              String
-//   unitList          String?
-  
-//   ingredients       Ingredients[]
-
-//   restaurant        Restaurants @relation(fields: [restaurantId], references: [id])
-//   restaurantId      String
-// }
